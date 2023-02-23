@@ -1,4 +1,4 @@
-name: Deploy to Staging
+name: Deploy to staging
 
 on:
   pull_request:
@@ -12,24 +12,24 @@ env:
 jobs:
   build:
     if: contains(github.event.pull_request.labels.*.name, 'stage')
+
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
-
       - name: npm install and build webpack
         run: |
           npm install
-          npm build
-
+          npm run build
       - uses: actions/upload-artifact@v3
         with:
           name: webpack artifacts
           path: public/
 
-  build-docker-image:
-    name: Build image and store in GitHub Container Registry
-    needs: build
+  Build-Docker-Image:
     runs-on: ubuntu-latest
+    needs: build
+    name: Build image and store in GitHub Container Registry
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -40,7 +40,7 @@ jobs:
           name: webpack artifacts
           path: public
 
-      - name: Login to GitHub Container Registry
+      - name: Log in to GHCR
         uses: docker/login-action@v2
         with:
           registry: ${{ env.IMAGE_REGISTRY_URL }}
@@ -60,15 +60,15 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.output.tags }}
-          labels: ${{ steps.meta.output.labels }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
-  deploy-to-azure:
-    name: Deploy app container to Azure
-    needs: build-docker-image
+  Deploy-to-Azure:
     runs-on: ubuntu-latest
+    needs: Build-Docker-Image
+    name: Deploy app container to Azure
     steps:
-      - name: Login via Azure CLI
+      - name: "Login via Azure CLI"
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
@@ -85,7 +85,7 @@ jobs:
           app-name: ${{env.AZURE_WEBAPP_NAME}}
           images: ${{env.IMAGE_REGISTRY_URL}}/${{ github.repository }}/${{env.DOCKER_IMAGE_NAME}}:${{ github.sha }}
 
-      - name: Azure logout via CLI
+      - name: Azure logout via Azure CLI
         uses: azure/CLI@v1
         with:
           inlineScript: |
