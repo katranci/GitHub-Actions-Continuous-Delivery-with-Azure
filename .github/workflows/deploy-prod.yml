@@ -10,13 +10,13 @@ env:
   DOCKER_IMAGE_NAME: katranci-azure-ttt
   AZURE_WEBAPP_NAME: katranci-ttt-app
 
-strategy:
-  matrix:
-    node-version: [16.x]
-
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x]
 
     steps:
       - uses: actions/checkout@v3
